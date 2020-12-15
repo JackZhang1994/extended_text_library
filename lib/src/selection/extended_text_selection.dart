@@ -324,10 +324,14 @@ class CommonTextSelectionGestureDetectorBuilder extends ExtendedTextSelectionGes
     @required Function showToolbar,
     @required Function hideToolbar,
     @required Function onTap,
+    @required Function onLongTapStart,
+    @required Function onDoubleTapDown,
     @required BuildContext context,
     @required Function requestKeyboard,
   })  : _hideToolbar = hideToolbar,
         _onTap = onTap,
+        _onLongTapStart = onLongTapStart,
+        _onDoubleTapDown = onDoubleTapDown,
         _context = context,
         _requestKeyboard = requestKeyboard,
         super(delegate: delegate, showToolbar: showToolbar);
@@ -335,6 +339,10 @@ class CommonTextSelectionGestureDetectorBuilder extends ExtendedTextSelectionGes
   final Function _hideToolbar;
 
   final Function _onTap;
+
+  final Function _onLongTapStart;
+
+  final Function _onDoubleTapDown;
 
   final BuildContext _context;
 
@@ -370,21 +378,9 @@ class CommonTextSelectionGestureDetectorBuilder extends ExtendedTextSelectionGes
   @override
   void onSingleTapUp(TapUpDetails details) {
     print('触发了——点击抬起事件');
-
     _hideToolbar();
     if (delegate.selectionEnabled) {
-      switch (Theme.of(_context).platform) {
-        case TargetPlatform.iOS:
-        case TargetPlatform.macOS:
-          renderEditable.selectWordEdge(cause: SelectionChangedCause.tap);
-          break;
-        case TargetPlatform.android:
-        case TargetPlatform.fuchsia:
-        case TargetPlatform.linux:
-        case TargetPlatform.windows:
-          renderEditable.selectPosition(cause: SelectionChangedCause.tap);
-          break;
-      }
+      renderEditable.selectPosition(cause: SelectionChangedCause.tap);
     }
     _requestKeyboard?.call();
     _onTap?.call();
@@ -393,50 +389,16 @@ class CommonTextSelectionGestureDetectorBuilder extends ExtendedTextSelectionGes
   @override
   void onSingleLongTapStart(LongPressStartDetails details) {
     print('触发了——长按开始事件');
-    // switch (Theme.of(_context).platform) {
-    //   case TargetPlatform.iOS:
-    //   case TargetPlatform.macOS:
-    //     renderEditable.selectPositionAt(
-    //       from: details.globalPosition,
-    //       cause: SelectionChangedCause.longPress,
-    //     );
-    //     break;
-    //   case TargetPlatform.android:
-    //   case TargetPlatform.fuchsia:
-    //   case TargetPlatform.linux:
-    //   case TargetPlatform.windows:
-    renderEditable.selectWord(cause: SelectionChangedCause.longPress);
-    Feedback.forLongPress(_context);
-    //     break;
-    // }
-    if (shouldShowSelectionToolbar) {
-      showToolbar();
+    if (delegate.selectionEnabled) {
+      renderEditable.selectWord(cause: SelectionChangedCause.longPress);
+      Feedback.forLongPress(_context);
     }
+    _onLongTapStart?.call();
   }
 
   @override
   void onSingleLongTapMoveUpdate(LongPressMoveUpdateDetails details) {
     print('触发了——长按移动事件');
-    if (delegate.selectionEnabled) {
-      // switch (Theme.of(_context).platform) {
-      //   case TargetPlatform.iOS:
-      //   case TargetPlatform.macOS:
-      //     renderEditable.selectPositionAt(
-      //       from: details.globalPosition,
-      //       cause: SelectionChangedCause.longPress,
-      //     );
-      //     break;
-      //   case TargetPlatform.android:
-      //   case TargetPlatform.fuchsia:
-      //   case TargetPlatform.linux:
-      //   case TargetPlatform.windows:
-      renderEditable.selectWordsInRange(
-        from: details.globalPosition - details.offsetFromOrigin,
-        to: details.globalPosition,
-        cause: SelectionChangedCause.longPress,
-      );
-      // break;
-    }
   }
 
   @override
@@ -447,12 +409,7 @@ class CommonTextSelectionGestureDetectorBuilder extends ExtendedTextSelectionGes
   @protected
   void onDoubleTapDown(TapDownDetails details) {
     print('触发了——双击事件');
-    // if (delegate.selectionEnabled) {
-    //   renderEditable.selectWord(cause: SelectionChangedCause.tap);
-    //   if (shouldShowSelectionToolbar) {
-    //     showToolbar();
-    //   }
-    // }
+    _onDoubleTapDown?.call();
   }
 
   @override
