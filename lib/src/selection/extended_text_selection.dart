@@ -76,8 +76,7 @@ class ExtendedTextSelectionGestureDetectorBuilder {
   /// The [RenderObject] of the [EditableText] for which the builder will
   /// provide a [TextSelectionGestureDetector].
   @protected
-  ExtendedTextSelectionRenderObject get renderEditable =>
-      delegate.renderEditable;
+  ExtendedTextSelectionRenderObject get renderEditable => delegate.renderEditable;
 
   /// Handler for [TextSelectionGestureDetector.onTapDown].
   ///
@@ -95,9 +94,7 @@ class ExtendedTextSelectionGestureDetectorBuilder {
     // trigger the selection overlay.
     // For backwards-compatibility, we treat a null kind the same as touch.
     final PointerDeviceKind kind = details.kind;
-    _shouldShowSelectionToolbar = kind == null ||
-        kind == PointerDeviceKind.touch ||
-        kind == PointerDeviceKind.stylus;
+    _shouldShowSelectionToolbar = kind == null || kind == PointerDeviceKind.touch || kind == PointerDeviceKind.stylus;
   }
 
   /// Handler for [TextSelectionGestureDetector.onForcePressStart].
@@ -271,8 +268,7 @@ class ExtendedTextSelectionGestureDetectorBuilder {
   ///  * [TextSelectionGestureDetector.onDragSelectionUpdate], which triggers
   ///    this callback./lib/src/material/text_field.dart
   @protected
-  void onDragSelectionUpdate(
-      DragStartDetails startDetails, DragUpdateDetails updateDetails) {
+  void onDragSelectionUpdate(DragStartDetails startDetails, DragUpdateDetails updateDetails) {
     renderEditable.selectPositionAt(
       from: startDetails.globalPosition,
       to: updateDetails.globalPosition,
@@ -322,8 +318,7 @@ class ExtendedTextSelectionGestureDetectorBuilder {
   }
 }
 
-class CommonTextSelectionGestureDetectorBuilder
-    extends ExtendedTextSelectionGestureDetectorBuilder {
+class CommonTextSelectionGestureDetectorBuilder extends ExtendedTextSelectionGestureDetectorBuilder {
   CommonTextSelectionGestureDetectorBuilder({
     @required ExtendedTextSelectionGestureDetectorBuilderDelegate delegate,
     @required Function showToolbar,
@@ -348,6 +343,7 @@ class CommonTextSelectionGestureDetectorBuilder
   @override
   void onForcePressStart(ForcePressDetails details) {
     super.onForcePressStart(details);
+    print('触发了——强按开始事件');
     if (delegate.selectionEnabled && shouldShowSelectionToolbar) {
       showToolbar();
     }
@@ -356,35 +352,25 @@ class CommonTextSelectionGestureDetectorBuilder
   @override
   void onForcePressEnd(ForcePressDetails details) {
     // Not required.
+    print('触发了——强按结束事件');
   }
 
   @override
-  void onSingleLongTapMoveUpdate(LongPressMoveUpdateDetails details) {
-    if (delegate.selectionEnabled) {
-      switch (Theme.of(_context).platform) {
-        case TargetPlatform.iOS:
-        case TargetPlatform.macOS:
-          renderEditable.selectPositionAt(
-            from: details.globalPosition,
-            cause: SelectionChangedCause.longPress,
-          );
-          break;
-        case TargetPlatform.android:
-        case TargetPlatform.fuchsia:
-        case TargetPlatform.linux:
-        case TargetPlatform.windows:
-          renderEditable.selectWordsInRange(
-            from: details.globalPosition - details.offsetFromOrigin,
-            to: details.globalPosition,
-            cause: SelectionChangedCause.longPress,
-          );
-          break;
-      }
-    }
+  void onTapDown(TapDownDetails details) {
+    super.onTapDown(details);
+    print('触发了——点击按下事件');
+  }
+
+  @override
+  void onSingleTapCancel() {
+    super.onSingleTapCancel();
+    print('触发了——点击取消事件');
   }
 
   @override
   void onSingleTapUp(TapUpDetails details) {
+    print('触发了——点击抬起事件');
+
     _hideToolbar();
     if (delegate.selectionEnabled) {
       switch (Theme.of(_context).platform) {
@@ -406,21 +392,84 @@ class CommonTextSelectionGestureDetectorBuilder
 
   @override
   void onSingleLongTapStart(LongPressStartDetails details) {
-    switch (Theme.of(_context).platform) {
-      case TargetPlatform.iOS:
-      case TargetPlatform.macOS:
-        renderEditable.selectPositionAt(
-          from: details.globalPosition,
-          cause: SelectionChangedCause.longPress,
-        );
-        break;
-      case TargetPlatform.android:
-      case TargetPlatform.fuchsia:
-      case TargetPlatform.linux:
-      case TargetPlatform.windows:
-        renderEditable.selectWord(cause: SelectionChangedCause.longPress);
-        Feedback.forLongPress(_context);
-        break;
+    print('触发了——长按开始事件');
+    // switch (Theme.of(_context).platform) {
+    //   case TargetPlatform.iOS:
+    //   case TargetPlatform.macOS:
+    //     renderEditable.selectPositionAt(
+    //       from: details.globalPosition,
+    //       cause: SelectionChangedCause.longPress,
+    //     );
+    //     break;
+    //   case TargetPlatform.android:
+    //   case TargetPlatform.fuchsia:
+    //   case TargetPlatform.linux:
+    //   case TargetPlatform.windows:
+    renderEditable.selectWord(cause: SelectionChangedCause.longPress);
+    Feedback.forLongPress(_context);
+    //     break;
+    // }
+    if (shouldShowSelectionToolbar) {
+      showToolbar();
     }
+  }
+
+  @override
+  void onSingleLongTapMoveUpdate(LongPressMoveUpdateDetails details) {
+    print('触发了——长按移动事件');
+    if (delegate.selectionEnabled) {
+      // switch (Theme.of(_context).platform) {
+      //   case TargetPlatform.iOS:
+      //   case TargetPlatform.macOS:
+      //     renderEditable.selectPositionAt(
+      //       from: details.globalPosition,
+      //       cause: SelectionChangedCause.longPress,
+      //     );
+      //     break;
+      //   case TargetPlatform.android:
+      //   case TargetPlatform.fuchsia:
+      //   case TargetPlatform.linux:
+      //   case TargetPlatform.windows:
+      renderEditable.selectWordsInRange(
+        from: details.globalPosition - details.offsetFromOrigin,
+        to: details.globalPosition,
+        cause: SelectionChangedCause.longPress,
+      );
+      // break;
+    }
+  }
+
+  @override
+  void onSingleLongTapEnd(LongPressEndDetails details) {
+    print('触发了——长按结束事件');
+  }
+
+  @protected
+  void onDoubleTapDown(TapDownDetails details) {
+    print('触发了——双击事件');
+    // if (delegate.selectionEnabled) {
+    //   renderEditable.selectWord(cause: SelectionChangedCause.tap);
+    //   if (shouldShowSelectionToolbar) {
+    //     showToolbar();
+    //   }
+    // }
+  }
+
+  @override
+  void onDragSelectionStart(DragStartDetails details) {
+    super.onDragSelectionStart(details);
+    print('触发了——拖动开始事件');
+  }
+
+  @override
+  void onDragSelectionUpdate(DragStartDetails startDetails, DragUpdateDetails updateDetails) {
+    super.onDragSelectionUpdate(startDetails, updateDetails);
+    print('触发了——拖动更新事件');
+  }
+
+  @override
+  void onDragSelectionEnd(DragEndDetails details) {
+    super.onDragSelectionEnd(details);
+    print('触发了——拖动结束事件');
   }
 }
